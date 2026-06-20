@@ -569,6 +569,14 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="social-sharing">
+        <span class="share-label">Share:</span>
+        <button class="share-button twitter-share" data-activity="${name}" title="Share on Twitter" aria-label="Share on Twitter">𝕏</button>
+        <button class="share-button facebook-share" data-activity="${name}" title="Share on Facebook" aria-label="Share on Facebook">f</button>
+        <button class="share-button linkedin-share" data-activity="${name}" title="Share on LinkedIn" aria-label="Share on LinkedIn">in</button>
+        <button class="share-button email-share" data-activity="${name}" title="Share via Email" aria-label="Share via Email">✉</button>
+        <button class="share-button copy-link" data-activity="${name}" title="Copy share link" aria-label="Copy share link">🔗</button>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -586,6 +594,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add social sharing event listeners
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        handleShare(event, name, details);
+      });
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -854,6 +870,53 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error signing up:", error);
     }
   });
+
+  // Handle social sharing
+  function handleShare(event, activityName, details) {
+    event.preventDefault();
+    const button = event.target.closest(".share-button");
+    const shareType = button.classList[1]; // Gets the class like 'twitter-share'
+
+    // Create share URL and message
+    const baseUrl = window.location.origin;
+    const activityUrl = `${baseUrl}?activity=${encodeURIComponent(activityName)}`;
+    const shareMessage = `Check out ${activityName} at Mergington High School! ${details.description}`;
+    const fullShareMessage = `${shareMessage} ${activityUrl}`;
+
+    switch (shareType) {
+      case "twitter-share":
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullShareMessage)}`,
+          "_blank",
+          "width=550,height=420"
+        );
+        break;
+      case "facebook-share":
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(activityUrl)}`,
+          "_blank",
+          "width=550,height=420"
+        );
+        break;
+      case "linkedin-share":
+        window.open(
+          `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(activityUrl)}`,
+          "_blank",
+          "width=550,height=420"
+        );
+        break;
+      case "email-share":
+        window.location.href = `mailto:?subject=${encodeURIComponent(`Check out: ${activityName}`)}&body=${encodeURIComponent(fullShareMessage)}`;
+        break;
+      case "copy-link":
+        navigator.clipboard.writeText(activityUrl).then(() => {
+          showMessage(`Share link copied to clipboard!`, "success");
+        }).catch(() => {
+          showMessage(`Failed to copy link. Please try again.`, "error");
+        });
+        break;
+    }
+  }
 
   // Expose filter functions to window for future UI control
   window.activityFilters = {
